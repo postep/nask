@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 from scipy import signal
 
+import threading
+
+
 NUM = [1]
 DEN = [30, 5]
 DT = 0.1
@@ -22,16 +25,29 @@ class Process():
 		self.D = P.D
 		self.x = np.array([START])
 		self.y = START
+
+		self.lock = threading.Lock()
 		
 
 	def next_step(self, u):
 		u = np.array([u])
 		
 		self.x = self.A*self.x + self.B*u
+		self.lock.acquire()
+		
+		self.state = self.x[0,0]
 		y = self.C*self.x + self.D*u
 		self.y = y[0,0]
-		
+
+		self.lock.release()
 		return [self.x[0,0], self.y]
+
+	def get_safe_state(self):
+		temp = None
+		self.lock.acquire()
+		temp = [self.state, self.y]
+		self.lock.release()
+		return temp
 
 
 class Controller:
@@ -75,6 +91,7 @@ class System:
 		self.p = p
 		self.r = r
 
+
 def test_controll(p, r):
 	T = 1000
 	UC = 25
@@ -88,6 +105,8 @@ def test_controll(p, r):
 
 	plt.plot(time, value)
 	plt.show()
+
+
 
 # p = Process()
 # test_process(p)
