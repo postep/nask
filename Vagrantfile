@@ -37,10 +37,19 @@ Vagrant.configure("2") do |config|
   
   config.vm.define "snort" do |snort|
     snort.vm.box = "debian/stretch64"
-    snort.vm.host_name = "snort"
     snort.vm.network "public_network", ip: "20.0.0.2/24"
-    snort.vm.provision "shell", inline: "sudo apt update"
-    # snort.vm.provision "shell", inline: "sudo apt install snort --assume-yes"
+    snort.vm.provision "shell", inline: "sudo ip route add 10.0.0.0/24 via 20.0.0.4 dev eth1"
+    snort.vm.provision "shell", path: "install.sh"
+    snort.vm.host_name = "snort"
+  end
+
+  config.vm.define "zaklocenie" do |zaklocenie|
+    zaklocenie.vm.box = "debian/stretch64"
+    zaklocenie.vm.host_name = "zaklocenie"
+    zaklocenie.vm.network "public_network", ip: "10.0.0.1/24"
+    zaklocenie.vm.provision "shell", inline: "sudo ip route add 20.0.0.0/24 via 10.0.0.4 dev eth1"
+    zaklocenie.vm.provision "shell", inline: "sudo apt update"
+    #zaklocenie.vm.provision "shell", inline: "sudo python3 /vagrant/client.py &"
   end
 
   config.vm.define "db" do |db|
@@ -49,7 +58,10 @@ Vagrant.configure("2") do |config|
     db.vm.network "public_network", ip: "20.0.0.3/24"
   end
 
-
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 3072
+    v.cpus = 2
+  end
 end
 
   # The most common configuration options are documented and commented below.

@@ -11,7 +11,7 @@ import queue
 import simulation
 
 HOST_NAME = '20.0.0.1'
-PORT_NUMBER = 9000
+PORT_NUMBER = 80
 
 global u_queue
 u_queue = queue.Queue()

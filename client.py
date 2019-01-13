@@ -7,7 +7,7 @@ import time
 import simulation
 
 HOST_NAME = '20.0.0.1'
-PORT_NUMBER = 9000
+PORT_NUMBER = 80
 UC = 25
 
 sched = BackgroundScheduler()
