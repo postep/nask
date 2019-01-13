@@ -33,15 +33,19 @@ Vagrant.configure("2") do |config|
     router.vm.network "public_network", ip: "20.0.0.4/24"
     router.vm.network "public_network", ip: "10.0.0.4/24"
     router.vm.provision "shell", inline: "sysctl -w net.ipv4.ip_forward=1"
+    router.vm.provision "shell", inline: "sudo apt update"
+    router.vm.provision "shell", inline: "export DEBIAN_FRONTEND=noninteractive; apt-get -yq install snort"
+    router.vm.provision "shell", inline: "sudo cp /vagrant/local.rules /etc/snort/rules/local.rules"
+    router.vm.provision "shell", path: "mongo_install.bash"
+    router.vm.provision "shell", inline: "sudo snort -q -A console -k none -c /etc/snort/snort.conf -i eth1 | sudo python3 /vagrant/security.py &"
   end
   
-  config.vm.define "snort" do |snort|
-    snort.vm.box = "debian/stretch64"
-    snort.vm.network "public_network", ip: "20.0.0.2/24"
-    snort.vm.provision "shell", inline: "sudo ip route add 10.0.0.0/24 via 20.0.0.4 dev eth1"
-    snort.vm.provision "shell", path: "install.sh"
-    snort.vm.host_name = "snort"
-  end
+  # config.vm.define "snort" do |snort|
+  #   snort.vm.box = "debian/stretch64"
+  #   snort.vm.network "public_network", ip: "20.0.0.2/24"
+  #   snort.vm.provision "shell", inline: "sudo ip route add 10.0.0.0/24 via 20.0.0.4 dev eth1"
+  #   snort.vm.host_name = "snort"
+  # end
 
   config.vm.define "zaklocenie" do |zaklocenie|
     zaklocenie.vm.box = "debian/stretch64"
@@ -49,14 +53,15 @@ Vagrant.configure("2") do |config|
     zaklocenie.vm.network "public_network", ip: "10.0.0.1/24"
     zaklocenie.vm.provision "shell", inline: "sudo ip route add 20.0.0.0/24 via 10.0.0.4 dev eth1"
     zaklocenie.vm.provision "shell", inline: "sudo apt update"
-    #zaklocenie.vm.provision "shell", inline: "sudo python3 /vagrant/client.py &"
+    zaklocenie.vm.provision "shell", inline: "sudo python3 /vagrant/client.py &"
   end
 
-  config.vm.define "db" do |db|
-    db.vm.box = "bofh/mongodb"
-    db.vm.host_name = "db"
-    db.vm.network "public_network", ip: "20.0.0.3/24"
-  end
+  # config.vm.define "db" do |db|
+  #   db.vm.box = "debian/stretch64"
+  #   db.vm.host_name = "db"
+  #   db.vm.network "public_network", ip: "20.0.0.3/24"
+  #   db.vm.provision "shell", path: "mongo_install.bash"
+  # end
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 3072
